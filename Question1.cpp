@@ -46,9 +46,40 @@ pair<vector<vector<int>>, vector<vector<int>>> graph :: floyd_warshall(){
 }
 
 
+struct inputs{
+    vector<graph*> graphs;
+    vector<pair<int, int>> trips;
+    vector<int> k_times; 
+}typedef inputs;
 
+inputs getting_input(){
+    int number_of_nodes;
+    int number_of_graphs;
+    int number_of_trips;
+    cin >> number_of_nodes;
+    cin >> number_of_graphs;
+    cin >> number_of_trips;
+    vector<graph*> my_graphs(number_of_graphs);
+    for(int m = 0; m < number_of_graphs; m++){
+        vector<vector<int>> adj(number_of_nodes, vector<int> (number_of_nodes));
+        for(int i = 0; i < number_of_nodes; i++){
+            for(int j = 0; j < number_of_nodes; j++){
+                cin >> adj[i][j];
+            }
+        }
+    my_graphs[m] = new graph(number_of_nodes, adj);
+    }   
+    vector<pair<int, int>> trips(number_of_trips);
+    vector<int> k_times(number_of_trips);
+    for(int r = 0; r < number_of_trips; r++){
+        cin >> trips[r].first;
+        cin >> trips[r].second;
+        cin >> k_times[r];
+    }
+    return {my_graphs, trips, k_times};
+} 
 
 int main(){
-
+    inputs my_inputs = getting_input();
     return 0;
 }
