@@ -1,85 +1,73 @@
 #include <iostream>
 #include <vector>
-#include <algorithm>
-
+#include <climits>
 
 using namespace std;
-class graph{
+class super_graph{
     public:
     int V;
-    vector<vector<int>> adjacency;
-    graph(int number_of_nodes, vector<vector<int>> adj);
-    pair<vector<vector<int>>, vector<vector<int>>> floyd_warshall();
+    int M;
+    vector<vector<int>> init_dp;
+    super_graph(int nodes, int graphs, vector<vector<int>> dp_zero);
+    vector<vector<vector<int>>> floyd_warshall();
 };
 
-graph :: graph(int number_of_nodes, vector<vector<int>> adj){
-    this -> V = number_of_nodes;
-    this -> adjacency = adj;
+super_graph :: super_graph(int nodes, int graphs, vector<vector<int>> dp_zero){
+    this -> V = nodes;
+    this -> M = graphs;
+    this -> init_dp = dp_zero;
 }
 
-pair<vector<vector<int>>, vector<vector<int>>> graph :: floyd_warshall(){
-    int n = this->V;
-    vector<vector<int>> A(n, vector<int> (n));
-    vector<vector<int>> T(n, vector<int> (n));
-    for(int i = 0; i < n; i++){
-        for(int j = 0; j < n; j++){
-            A[i][j] = this->adjacency[i][j];
-            if(this->adjacency[i][j] > 0){
-                T[i][j] = 1;
-            }
-            else{
-                T[i][j] = 0;
-            }
-        }
-    }
-    for(int k = 0; k < n; k++){
-        for(int i = 0; i < n; i++){
-            for(int j = 0; j < n; j++){
-                if(A[i][j] > A[i][k] + A[k][j]){
-                    A[i][j] = A[i][k] + A[k][j];
-                    T[i][j] = T[i][k] + T[k][j];
+vector<vector<vector<int>>>  super_graph :: floyd_warshall(){
+    vector<vector<vector<int>>> dp(1001, vector<vector<int>>(V, vector<int> (V, INT_MAX)));
+    dp[0] = this->init_dp;
+    for(int cond = 1; cond <= 1000; cond++){
+        for(int k = 0; k < V; k++){
+            for(int i = 0; i < V; i++){
+                for(int j = 0; j < V; j++){
+                    dp[cond][i][j] = min(dp[cond][i][j], dp[0][i][k] + dp[cond-1][k][j]);
                 }
             }
         }
     }
-    return make_pair(A, T);   
+    return dp;
 }
 
-
-struct inputs{
-    vector<graph*> graphs;
-    vector<pair<int, int>> trips;
-    vector<int> k_times; 
-}typedef inputs;
-
-inputs getting_input(){
-    int number_of_nodes;
-    int number_of_graphs;
-    int number_of_trips;
-    cin >> number_of_nodes;
-    cin >> number_of_graphs;
-    cin >> number_of_trips;
-    vector<graph*> my_graphs(number_of_graphs);
-    for(int m = 0; m < number_of_graphs; m++){
-        vector<vector<int>> adj(number_of_nodes, vector<int> (number_of_nodes));
-        for(int i = 0; i < number_of_nodes; i++){
-            for(int j = 0; j < number_of_nodes; j++){
+int main(){
+    int nodes;
+    int graphs;
+    int trips;
+    cin >> nodes;
+    cin >> graphs;
+    cin >> trips;
+    vector<vector<int>> adj(nodes, vector<int>(nodes));
+    vector<int> originis(trips);
+    vector<int> dests(trips);
+    vector<int> conditions(trips);
+    vector<vector<int>> dp_zero(nodes, vector<int> (nodes, INT_MAX));
+    for(int m = 0; m < graphs; m++){
+        for(int i = 0; i < nodes; i++){
+            for(int j = 0; j < nodes; j++){
                 cin >> adj[i][j];
             }
         }
-    my_graphs[m] = new graph(number_of_nodes, adj);
-    }   
-    vector<pair<int, int>> trips(number_of_trips);
-    vector<int> k_times(number_of_trips);
-    for(int r = 0; r < number_of_trips; r++){
-        cin >> trips[r].first;
-        cin >> trips[r].second;
-        cin >> k_times[r];
+        for(int k = 0; k < nodes; k++){
+            for(int i = 0; i < nodes; i++){
+                for(int j = 0; j < nodes; j++){
+                    adj[i][j] = min(adj[i][j], adj[i][k] + adj[k][j]);
+                    dp_zero[i][j] = min(dp_zero[i][j], adj[i][j]);
+                }
+            }
+        }
     }
-    return {my_graphs, trips, k_times};
-} 
-
-int main(){
-    inputs my_inputs = getting_input();
+    super_graph* my_graph = new super_graph(nodes, graphs, dp_zero);
+    vector<vector<vector<int>>> x = my_graph->floyd_warshall();
+    for(int r = 0; r < trips; r++){
+        cin >> originis[r]>> dests[r]>> conditions[r];
+    }
+    for(int r = 0; r < trips; r++){
+        cout << x[conditions[r]][originis[r]-1][dests[r]-1] << endl;
+    }
+    delete my_graph;
     return 0;
 }
